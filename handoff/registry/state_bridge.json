@@ -1,0 +1,31 @@
+{
+  "agents": [
+    { "id": "strategist", "name": "전략가", "role": "core", "model": "gemma-4-e4b-it", "status": "idle", "icon": "◆", "desc": "방향 · 기획 · 목표", "color": "#00D4AA" },
+    { "id": "executor",   "name": "실행가", "role": "core", "model": "gemma-4-e4b-it", "status": "idle", "icon": "▶", "desc": "구체적 구현 · 자동 전환", "color": "#4ECDC4" },
+    { "id": "critic",     "name": "비판가", "role": "core", "model": "gemma-4-e4b-it", "status": "idle", "icon": "◎", "desc": "맹점 · 리스크 · 반론", "color": "#FF6B6B" },
+    { "id": "designer",   "name": "디자이너", "role": "module", "model": "gemma-4-e4b-it", "status": "off",  "icon": "◇", "desc": "웹·앱 UI/UX", "color": "#A78BFA" },
+    { "id": "marketer",   "name": "마케터",   "role": "module", "model": "gemma-4-e4b-it", "status": "off",  "icon": "▣", "desc": "공개 · 홍보 전략", "color": "#F59E0B" },
+    { "id": "bm",         "name": "BM설계",   "role": "module", "model": "gemma-4-e4b-it", "status": "off",  "icon": "◈", "desc": "수익 모델 설계", "color": "#EC4899" }
+  ],
+  "tickets": [],
+  "checkpoints": [
+    { "id": "CP1", "name": "체크포인트 1", "desc": "부서 내부 안 검토", "command": "/checkpoint-l1", "status": "waiting", "level": "L1", "timestamp": null, "feedback": null },
+    { "id": "CP2", "name": "체크포인트 2", "desc": "부서 간 통합 검토", "command": "/checkpoint-l2", "status": "waiting", "level": "L2", "timestamp": null, "feedback": null },
+    { "id": "CP3", "name": "체크포인트 3", "desc": "사용자 최종 승인", "command": "dashboard",       "status": "waiting", "level": "User", "timestamp": null, "feedback": null }
+  ],
+  "rules": {
+    "global":  { "name": "CLAUDE.md",         "type": "전역 규칙",   "rules": [] },
+    "project": { "name": "PROJECT_CLAUDE.md", "type": "프로젝트 규칙", "rules": [] }
+  },
+  "budget": {
+    "gemma":  { "label": "Gemma (로컬)", "cost": 0, "unit": "₩", "iterations": 0, "note": "Ollama 무료" },
+    "claude": { "label": "Claude Code (Max)", "cost": 0, "unit": "₩", "monthly": "정액제", "checkpoints": 0, "note": "Max 구독 정액" },
+    "total":  { "api": 0, "infrastructure": 0, "subscription": "Max 구독" }
+  },
+  "logs": [],
+  "seasons": [
+    { "id": "S01", "name": "", "status": "pending", "progress": 0, "startDate": "", "endDate": null }
+  ],
+  "retro": null,
+  "ws_clients": []
+}
