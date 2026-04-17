@@ -9,7 +9,7 @@
 
 - **워커**: Gemma (gemma-4-e4b-it) via Ollama — L1/L2 반복 루프 전담
 - **감독자**: Claude Code (Max 구독) — 체크포인트 3회 개입 한정
-- **오케스트레이션**: CrewAI (프로토타입) + LangGraph (프로덕션)
+- **오케스트레이션**: AutoGen (에이전트 루프) + LangGraph (OrchestrationState 소유, CP 전환)
 - **런타임**: MacBook Pro M5 로컬 + ngrok 외부 접근
 - **API 비용**: 0원 (로컬 Gemma + Max 구독 정액)
 
