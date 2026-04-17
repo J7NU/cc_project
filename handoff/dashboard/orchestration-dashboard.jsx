@@ -2,12 +2,12 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 // ─── MOCK DATA ───────────────────────────────────────────────
 const MOCK_AGENTS = [
-  { id: "strategist", name: "전략가", role: "core", model: "sonnet", status: "active", icon: "◆", desc: "방향 · 기획 · 목표", tasks: 3, completed: 1, color: "#00D4AA" },
-  { id: "executor", name: "실행가", role: "core", model: "sonnet", desc: "구체적 구현 · 자동 전환", status: "active", icon: "▶", tasks: 5, completed: 3, color: "#4ECDC4" },
-  { id: "critic", name: "비판가", role: "core", model: "sonnet", desc: "맹점 · 리스크 · 반론", status: "active", icon: "◎", tasks: 4, completed: 2, color: "#FF6B6B" },
-  { id: "designer", name: "디자이너", role: "module", model: "sonnet", desc: "웹·앱 UI/UX", status: "idle", icon: "◇", tasks: 0, completed: 0, color: "#A78BFA" },
-  { id: "marketer", name: "마케터", role: "module", model: "sonnet", desc: "공개 · 홍보 전략", status: "off", icon: "▣", tasks: 0, completed: 0, color: "#F59E0B" },
-  { id: "bm", name: "BM설계", role: "module", model: "sonnet", desc: "수익 모델 설계", status: "off", icon: "◈", tasks: 0, completed: 0, color: "#EC4899" },
+  { id: "strategist", name: "전략가", role: "core", model: "gemma-4-e4b-it", status: "active", icon: "◆", desc: "방향 · 기획 · 목표", tasks: 3, completed: 1, color: "#00D4AA" },
+  { id: "executor", name: "실행가", role: "core", model: "gemma-4-e4b-it", desc: "구체적 구현 · 자동 전환", status: "active", icon: "▶", tasks: 5, completed: 3, color: "#4ECDC4" },
+  { id: "critic", name: "비판가", role: "core", model: "gemma-4-e4b-it", desc: "맹점 · 리스크 · 반론", status: "active", icon: "◎", tasks: 4, completed: 2, color: "#FF6B6B" },
+  { id: "designer", name: "디자이너", role: "module", model: "gemma-4-e4b-it", desc: "웹·앱 UI/UX", status: "idle", icon: "◇", tasks: 0, completed: 0, color: "#A78BFA" },
+  { id: "marketer", name: "마케터", role: "module", model: "gemma-4-e4b-it", desc: "공개 · 홍보 전략", status: "off", icon: "▣", tasks: 0, completed: 0, color: "#F59E0B" },
+  { id: "bm", name: "BM설계", role: "module", model: "gemma-4-e4b-it", desc: "수익 모델 설계", status: "off", icon: "◈", tasks: 0, completed: 0, color: "#EC4899" },
 ];
 
 const MOCK_TICKETS = [
@@ -39,7 +39,8 @@ const MOCK_RULES = {
       { id: "G1", text: "사용자 승인 없이 실행 금지", category: "불변", mutable: false },
       { id: "G2", text: "완결성 · 일관성 · 규칙준수 · 추적가능성", category: "수렴기준", mutable: false },
       { id: "G3", text: "서브에이전트가 규칙을 자동 상속", category: "상속", mutable: false },
-      { id: "G4", text: "비판가 N회 연속 맹점 없음 시 수렴 인정", category: "수렴기준", mutable: true },
+      { id: "G4", text: "Claude Code 개입 제한 (CP1/CP2/CP3 세 체크포인트에서만)", category: "개입제한", mutable: false },
+      { id: "G5", text: "비판가 N회 연속 맹점 없음 시 수렴 인정", category: "수렴기준", mutable: true },
     ]
   },
   project: {
@@ -54,7 +55,7 @@ const MOCK_RULES = {
 };
 
 const MOCK_BUDGET = {
-  gemma: { label: "Gemma (로컬)", cost: 0, unit: "₩", iterations: 847, note: "Ollama 무료" },
+  gemma: { label: "Gemma (로컬)", cost: 0, unit: "₩", iterations: 847, iterationsByAgent: { strategist: { l1: 287, l2: 142 }, executor: { l1: 312, l2: 198 }, critic: { l1: 248, l2: 107 } }, note: "Ollama 무료" },
   claude: { label: "Claude Code (Max)", cost: 0, unit: "₩", monthly: "정액제", checkpoints: 3, note: "Max 구독 정액" },
   total: { api: 0, infrastructure: 0, subscription: "Max 구독" }
 };
@@ -734,11 +735,11 @@ const BudgetPage = () => (
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <span style={{ fontSize: 11, color: COLORS.textMuted }}>L1 반복</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, fontFamily: "'JetBrains Mono', monospace" }}>{Math.floor(Math.random() * 200 + 100)}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, fontFamily: "'JetBrains Mono', monospace" }}>{MOCK_BUDGET.gemma.iterationsByAgent[agent.id]?.l1 ?? "—"}</span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ fontSize: 11, color: COLORS.textMuted }}>L2 반복</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, fontFamily: "'JetBrains Mono', monospace" }}>{Math.floor(Math.random() * 150 + 50)}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, fontFamily: "'JetBrains Mono', monospace" }}>{MOCK_BUDGET.gemma.iterationsByAgent[agent.id]?.l2 ?? "—"}</span>
             </div>
           </div>
         ))}
