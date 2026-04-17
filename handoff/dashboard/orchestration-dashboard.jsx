@@ -401,13 +401,16 @@ const AgentsPage = () => {
                   <div style={{ fontSize: 11, color: COLORS.textMuted }}>{agent.desc}</div>
                 </div>
               </div>
-              {/* Toggle Switch */}
-              <div
+              {/* Toggle Switch — accessible button */}
+              <button
+                role="switch"
+                aria-checked={moduleStates[agent.id]}
+                aria-label={`Toggle ${agent.name} module`}
                 onClick={(e) => { e.stopPropagation(); setModuleStates(s => ({ ...s, [agent.id]: !s[agent.id] })); }}
                 style={{
-                  width: 44, height: 24, borderRadius: 12, cursor: "pointer",
+                  width: 44, height: 24, borderRadius: 12, cursor: "pointer", border: "none",
                   background: moduleStates[agent.id] ? COLORS.accent : COLORS.border,
-                  position: "relative", transition: "background 0.2s",
+                  position: "relative", transition: "background 0.2s", flexShrink: 0,
                 }}
               >
                 <div style={{
@@ -415,7 +418,7 @@ const AgentsPage = () => {
                   position: "absolute", top: 3, left: moduleStates[agent.id] ? 23 : 3,
                   transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
                 }} />
-              </div>
+              </button>
             </div>
           </Card>
         ))}
@@ -577,6 +580,9 @@ const CheckpointsPage = () => {
               fontFamily: "inherit", boxSizing: "border-box",
             }}
           />
+        </div>
+        <div style={{ marginBottom: 12, padding: "8px 12px", borderRadius: 6, background: COLORS.warnSoft, border: `1px solid ${COLORS.warn}30`, fontSize: 11, color: COLORS.warn }}>
+          ⚠ Approval gate locked — CP2 review must pass before approval is available.
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <button disabled style={{
@@ -835,22 +841,149 @@ const RetrospectivePage = () => (
   </div>
 );
 
+// ─── PAGE: REPLAY DEBUGGER ───────────────────────────────────
+// TODO: Implement full Replay Debugger UI (see design decisions below)
+// Layout:
+//   TOP:    Horizontal timeline scrubber — one tick per iteration, 3 swimlanes (Strategist/Executor/Critic)
+//           Color: green=converged, purple=active, amber=pending, gray=past
+//   LEFT:   Snapshot detail — agent ID, iteration N, input/output diff (green=added, red=removed), diff% badge, blindspot count
+//   RIGHT:  Convergence graph — line chart of diff% + blindspot count per iteration, converged flag marker
+//   ACTION: Fork Execution button (top-right) — creates new session from selected snapshot with modified prompt
+const ReplayPage = ({ sessions = [] }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+    <Card style={{ border: `1px solid ${COLORS.accent}30`, background: `linear-gradient(135deg, ${COLORS.surface} 0%, rgba(168,85,247,0.04) 100%)` }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <div style={{ fontSize: 11, color: COLORS.accent, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>⏮ Replay Debugger</div>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: COLORS.text }}>Iteration Timeline</h2>
+          <p style={{ fontSize: 13, color: COLORS.textMuted, margin: "8px 0 0" }}>
+            Scrub through every agent iteration. Inspect diffs. Fork from any snapshot.
+          </p>
+        </div>
+        <button disabled style={{
+          padding: "10px 20px", borderRadius: 8, border: `1px solid ${COLORS.accent}50`,
+          background: COLORS.accentSoft, color: COLORS.accent, fontSize: 13, fontWeight: 600,
+          cursor: "not-allowed", opacity: 0.5,
+        }}>
+          ⑂ Fork Session
+        </button>
+      </div>
+    </Card>
+
+    {/* Timeline scrubber placeholder */}
+    <Card>
+      <SectionTitle>Timeline Scrubber</SectionTitle>
+      <div style={{ padding: "32px 16px", textAlign: "center", color: COLORS.textMuted, fontSize: 13, border: `1px dashed ${COLORS.border}`, borderRadius: 8 }}>
+        ⚠ Replay Debugger requires a live backend session.<br />
+        <span style={{ fontSize: 11, marginTop: 4, display: "block" }}>Connect via WebSocket to view iteration history.</span>
+      </div>
+    </Card>
+
+    {/* Split panel placeholder */}
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+      <Card>
+        <SectionTitle>Snapshot Detail</SectionTitle>
+        <div style={{ padding: "32px 16px", textAlign: "center", color: COLORS.textMuted, fontSize: 13, border: `1px dashed ${COLORS.border}`, borderRadius: 8 }}>
+          Select an iteration on the timeline to inspect its diff.
+        </div>
+      </Card>
+      <Card>
+        <SectionTitle>Convergence Graph</SectionTitle>
+        <div style={{ padding: "32px 16px", textAlign: "center", color: COLORS.textMuted, fontSize: 13, border: `1px dashed ${COLORS.border}`, borderRadius: 8 }}>
+          diff% and blindspot count per iteration will appear here.
+        </div>
+      </Card>
+    </div>
+  </div>
+);
+
 // ─── MAIN APP ────────────────────────────────────────────────
 const NAV_ITEMS = [
-  { id: "overview", label: "개요", icon: "◈" },
-  { id: "agents", label: "에이전트", icon: "◆" },
-  { id: "tickets", label: "태스크", icon: "▤" },
-  { id: "checkpoints", label: "체크포인트", icon: "◎" },
-  { id: "rules", label: "규칙", icon: "⚙" },
-  { id: "budget", label: "비용", icon: "◇" },
-  { id: "logs", label: "로그", icon: "▸" },
-  { id: "retro", label: "회고", icon: "↺" },
+  { id: "overview", label: "Overview", icon: "◈" },
+  { id: "agents", label: "Agents", icon: "◆" },
+  { id: "tickets", label: "Tasks", icon: "▤" },
+  { id: "checkpoints", label: "Checkpoints", icon: "◎" },
+  { id: "rules", label: "Rules", icon: "⚙" },
+  { id: "budget", label: "Budget", icon: "◇" },
+  { id: "logs", label: "Logs", icon: "▸" },
+  { id: "replay", label: "Replay", icon: "⏮" },
+  { id: "retro", label: "Retro", icon: "↺" },
 ];
+
+// ─── EMPTY STATE: NO SESSION ─────────────────────────────────
+const SessionWelcome = () => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", minHeight: 400 }}>
+    <div style={{
+      padding: 48, borderRadius: 16, border: `1px solid ${COLORS.border}`,
+      background: COLORS.surface, maxWidth: 440, width: "100%", textAlign: "center",
+    }}>
+      <div style={{
+        width: 56, height: 56, borderRadius: 14, margin: "0 auto 20px",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.purple})`,
+        fontSize: 26, fontWeight: 700, color: COLORS.bg,
+      }}>◈</div>
+      <h2 style={{ fontSize: 20, fontWeight: 700, color: COLORS.text, margin: "0 0 8px" }}>Orchestrator v3</h2>
+      <p style={{ fontSize: 13, color: COLORS.textMuted, margin: "0 0 24px" }}>No active session. Start one in your terminal:</p>
+      <code style={{
+        display: "block", padding: "12px 20px", borderRadius: 8,
+        background: "rgba(0,0,0,0.4)", border: `1px solid ${COLORS.border}`,
+        color: COLORS.accent, fontSize: 16, fontFamily: "'JetBrains Mono', monospace",
+        marginBottom: 16,
+      }}>/start</code>
+      <p style={{ fontSize: 11, color: COLORS.textDim }}>Then reload this dashboard to see live data.</p>
+    </div>
+  </div>
+);
+
+// ─── SYSTEM ERROR OVERLAY ────────────────────────────────────
+const OllamaErrorOverlay = ({ onRetry }) => (
+  <div style={{
+    position: "fixed", inset: 0, zIndex: 9999,
+    background: "rgba(10,8,18,0.97)", backdropFilter: "blur(4px)",
+    display: "flex", alignItems: "center", justifyContent: "center",
+  }}>
+    <div style={{
+      padding: 40, borderRadius: 16, border: `1px solid ${COLORS.error}40`,
+      background: COLORS.surface, maxWidth: 420, width: "100%", textAlign: "center",
+    }}>
+      <div style={{ fontSize: 40, marginBottom: 16 }}>⚠</div>
+      <h2 style={{ fontSize: 20, fontWeight: 700, color: COLORS.error, margin: "0 0 8px" }}>Ollama Unreachable</h2>
+      <p style={{ fontSize: 13, color: COLORS.textMuted, margin: "0 0 8px" }}>localhost:11434 not responding</p>
+      <code style={{ fontSize: 13, color: COLORS.accent, display: "block", marginBottom: 24, fontFamily: "'JetBrains Mono', monospace" }}>ollama serve</code>
+      <button onClick={onRetry} style={{
+        padding: "10px 28px", borderRadius: 8, border: "none",
+        background: COLORS.accent, color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer",
+      }}>Retry Connection</button>
+    </div>
+  </div>
+);
+
+const WSDisconnectBanner = ({ onRetry }) => (
+  <div style={{
+    padding: "8px 28px", background: COLORS.errorSoft, borderBottom: `1px solid ${COLORS.error}30`,
+    display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12,
+  }}>
+    <span style={{ color: COLORS.error }}>⚠ WebSocket disconnected — data may be stale</span>
+    <button onClick={onRetry} style={{
+      padding: "4px 12px", borderRadius: 6, border: `1px solid ${COLORS.error}50`,
+      background: "transparent", color: COLORS.error, fontSize: 11, cursor: "pointer",
+    }}>Reconnect</button>
+  </div>
+);
 
 export default function App() {
   const [page, setPage] = useState("overview");
   const [time, setTime] = useState(new Date());
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // Connection state — false = using mock data (no live backend yet)
+  const [ollamaDown, setOllamaDown] = useState(false);
+  const [wsDisconnected, setWsDisconnected] = useState(false);
+  // sessionActive: false = show welcome screen (no real session yet)
+  // When real WS connects, set to true when session data arrives
+  const [sessionActive, setSessionActive] = useState(true); // true = show mock data
+  // diskFull: shown when PostgreSQL write fails (eng review critical gap)
+  const [diskFull, setDiskFull] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000);
@@ -859,13 +992,14 @@ export default function App() {
 
   const renderPage = () => {
     switch (page) {
-      case "overview": return <OverviewPage setPage={setPage} />;
+      case "overview": return sessionActive ? <OverviewPage setPage={setPage} /> : <SessionWelcome />;
       case "agents": return <AgentsPage />;
       case "tickets": return <TicketsPage />;
       case "checkpoints": return <CheckpointsPage />;
       case "rules": return <RulesPage />;
       case "budget": return <BudgetPage />;
       case "logs": return <LogsPage />;
+      case "replay": return <ReplayPage />;
       case "retro": return <RetrospectivePage />;
       default: return <OverviewPage setPage={setPage} />;
     }
@@ -873,6 +1007,22 @@ export default function App() {
 
   return (
     <div style={{ display: "flex", height: "100vh", background: COLORS.bg, color: COLORS.text, fontFamily: "'Pretendard', -apple-system, sans-serif", overflow: "hidden" }}>
+      {ollamaDown && <OllamaErrorOverlay onRetry={() => setOllamaDown(false)} />}
+      {diskFull && (
+        <div style={{
+          position: "fixed", bottom: 24, right: 24, zIndex: 9000,
+          padding: "14px 20px", borderRadius: 10, border: `1px solid ${COLORS.error}40`,
+          background: COLORS.surface, display: "flex", alignItems: "center", gap: 12,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+        }}>
+          <span style={{ color: COLORS.error, fontSize: 18 }}>⚠</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.error }}>Disk Full — Snapshot Paused</div>
+            <div style={{ fontSize: 11, color: COLORS.textMuted }}>PostgreSQL write failed. Loop paused. Free up disk space to resume.</div>
+          </div>
+          <button onClick={() => setDiskFull(false)} style={{ background: "none", border: "none", color: COLORS.textMuted, cursor: "pointer", fontSize: 16 }}>✕</button>
+        </div>
+      )}
       <style>{`
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css');
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
@@ -887,6 +1037,8 @@ export default function App() {
         }
         select, textarea, input { font-family: inherit; }
         select option { background: ${COLORS.surface}; color: ${COLORS.text}; }
+        button:focus-visible, [role="switch"]:focus-visible { outline: 2px solid ${COLORS.accent}; outline-offset: 2px; }
+        /* Viewport target: this dashboard is desktop-first (min-width 1024px recommended) */
       `}</style>
 
       {/* Sidebar */}
@@ -967,6 +1119,7 @@ export default function App() {
 
       {/* Main Content */}
       <main style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {wsDisconnected && <WSDisconnectBanner onRetry={() => setWsDisconnected(false)} />}
         {/* Top Bar */}
         <header style={{
           height: 56, minHeight: 56, padding: "0 28px",
