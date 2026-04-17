@@ -66,7 +66,7 @@ dashboard/
 | 구성 요소 | 기술 | 비고 |
 |-----------|------|------|
 | 워커 LLM | Gemma (gemma-4-e4b-it) | Ollama via localhost:11434 |
-| 오케스트레이션 | LangGraph + CrewAI | CrewAI로 프로토타입, LangGraph로 래핑 |
+| 오케스트레이션 | AutoGen + LangGraph | AutoGen으로 에이전트 루프, LangGraph가 OrchestrationState 소유 |
 | 백엔드 | FastAPI + Uvicorn | REST + WebSocket |
 | 프론트엔드 | React (JSX 완성됨) | WS_URL만 교체하면 연결 |
 | 런타임 | MacBook Pro M5 | Ollama 네이티브 Apple Silicon |
@@ -176,7 +176,7 @@ curl localhost:11434/api/tags
 
 # 2. Python 환경
 python -m venv .venv && source .venv/bin/activate
-pip install crewai langgraph langchain-ollama fastapi uvicorn
+pip install pyautogen langgraph langchain-ollama fastapi uvicorn pydantic
 
 # 3. Hello World — Gemma 통신 확인
 python -c "

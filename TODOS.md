@@ -98,3 +98,69 @@
 **Context:** Add to `src/orchestrator/checkpoints.py`. Schema addition: `latency_ms INTEGER` column in the `checkpoints` table (add in the Alembic initial migration from TODO-4). Dashboard can show CP latency in the timeline view.
 
 **Depends on:** TODO-4 (Alembic + checkpoints table).
+
+---
+
+## TODO-7: Create DESIGN.md — document existing design system (Phase A)
+
+**What:** Create `handoff/dashboard/DESIGN.md` extracting the existing design system from `orchestration-dashboard.jsx`:
+- `COLORS` object (full token list with semantic names)
+- Spacing scale (values actually used: 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 40, 48)
+- Typography scale (font sizes used: 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 28, 36)
+- Component inventory: Card, MetricCard, StatusBadge, ProgressBar, TabButton, SectionTitle
+- Viewport target: desktop-first, min-width 1024px recommended
+- Deferred a11y spec (ARIA, keyboard nav, contrast) to TODO-9 / Phase B
+
+**Why:** Without DESIGN.md, future contributors (or future sessions) guess at padding and font sizes. By Phase B when the backend connects and 2+ developers might contribute, design drift will cause visual inconsistencies.
+
+**Pros:** Single source of truth. Future components align with the existing system automatically.
+
+**Cons:** ~30 min to write. Minor maintenance overhead.
+
+**Context:** From `/plan-design-review` on 2026-04-17. No DESIGN.md existed in the project. The inline COLORS object and component system in `orchestration-dashboard.jsx` are clean enough to extract directly. This is purely documentation, no code changes needed.
+
+**Depends on:** Nothing. Can be done before Phase B starts.
+
+---
+
+## TODO-8: Implement ReplayPage — Replay Debugger UI (Phase B/C)
+
+**What:** Implement the full `ReplayPage` component in `orchestration-dashboard.jsx` (currently a stub). Design decisions are locked:
+- 3 horizontal swimlane timeline (Strategist/Executor/Critic), each with brand color, clickable iteration ticks
+- Iteration tick colors: green=converged, purple=active, amber=pending, gray=past
+- Left panel: snapshot detail (agent ID, iteration N, input/output text diff with green=added/red=removed, diff% badge, blindspot count badge)
+- Right panel: Recharts `<LineChart>` showing diff% + blindspot count per iteration, converged flag marker
+- Fork Execution: modal dialog with original prompt (read-only), modified prompt textarea, session ID (auto-generated), [Cancel] [Fork ⊕ Run] buttons
+- Session selector: deferred — Phase B decides (list in sidebar or dropdown in header)
+
+**Why:** This is THE differentiating feature per the locked architecture (Approach C). Without it, this is "just another orchestrator."
+
+**Pros:** Makes the research value of the platform visible and usable. Enables academic publication workflow.
+
+**Cons:** Requires Phase B backend: WebSocket `convergence_metric` messages, PostgreSQL `iterations` table, `/api/sessions/{id}/iterations` endpoint.
+
+**Context:** From `/plan-design-review` on 2026-04-17. Architecture locked in `install-external-skills-BPPqE-design-20260417-030231.md`. `ReplayPage` stub exists at line ~838 in dashboard. Chart library: `recharts` (add to package.json / import in JSX). The Replay Debugger requires the `iterations` table from TODO-4's Alembic migration.
+
+**Depends on:** TODO-4 (Alembic + iterations schema), Phase B WebSocket API, Phase B `/api/sessions` endpoint.
+
+---
+
+## TODO-9: Full accessibility audit (Phase B, before public demo)
+
+**What:** Conduct a full a11y audit of `orchestration-dashboard.jsx`:
+- ARIA landmarks: `role="navigation"` on nav, `role="main"` on main, `role="banner"` on header
+- Keyboard navigation: Tab order through all interactive elements, Escape closes modals
+- Touch targets: 44×44px minimum on all clickable elements (check: some icons are 18-20px)
+- Contrast ratios: verify all body text meets 4.5:1 WCAG AA (textMuted `#64748B` on bg `#0A0812`)
+- Screen reader flow: test with VoiceOver or NVDA
+- Currently fixed: toggle switches converted to `<button role="switch" aria-checked>`, `:focus-visible` outline added
+
+**Why:** This is a developer research tool, not a consumer app. But if it becomes a startup product (the stated goal), a11y issues at launch are embarrassing and legally risky.
+
+**Pros:** WCAG AA compliance. Keyboard-only users can operate the tool. No screen-reader surprises at first public demo.
+
+**Cons:** ~2-4 hours of systematic audit work.
+
+**Context:** From `/plan-design-review` on 2026-04-17. Basic a11y was applied (TODO-9 partial): toggle switches fixed, focus styles added. The deeper audit is deferred to Phase B. `#64748B` on `#0A0812` should be verified — textMuted is used heavily and may fail contrast.
+
+**Depends on:** Phase B implementation (dashboard connected to real data, worth auditing for real).
